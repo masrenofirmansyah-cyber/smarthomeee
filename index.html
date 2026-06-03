@@ -1,192 +1,350 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Home Blynk</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Home Blynk</title>
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #0f172a;
-            color: white;
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .card {
-            background: #1e293b;
-            padding: 20px;
-            border-radius: 15px;
-            max-width: 500px;
-            margin: 20px auto;
-        }
-        
-        button {
-            padding: 15px 20px;
-            margin: 5px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            color: white;
-            font-size: 16px;
-        }
-        
-        .on {
-            background: green;
-        }
-        
-        .off {
-            background: red;
-        }
-        
-        input,
-        select {
-            width: 100%;
-            padding: 10px;
-            margin-top: 10px;
-            border-radius: 8px;
-        }
-        
-        ul {
-            text-align: left;
-        }
-    </style>
+<style>
 
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    background:#0f172a;
+    color:white;
+    padding:20px;
+}
+
+.container{
+    max-width:700px;
+    margin:auto;
+}
+
+h1{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.card{
+    background:#1e293b;
+    padding:20px;
+    border-radius:15px;
+    margin-bottom:20px;
+}
+
+h2{
+    margin-bottom:15px;
+}
+
+button{
+    border:none;
+    border-radius:10px;
+    padding:12px 18px;
+    cursor:pointer;
+    color:white;
+    margin:5px;
+}
+
+.on{
+    background:#16a34a;
+}
+
+.off{
+    background:#dc2626;
+}
+
+.primary{
+    background:#2563eb;
+}
+
+.danger{
+    background:#b91c1c;
+}
+
+input,select{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:10px;
+    margin-top:10px;
+    margin-bottom:10px;
+}
+
+.jadwal-item{
+    background:#334155;
+    padding:10px;
+    border-radius:10px;
+    margin-top:10px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.status{
+    font-weight:bold;
+}
+
+</style>
 </head>
-
 <body>
 
-    <h1>🏠 Smart Home Blynk</h1>
+<div class="container">
 
-    <div class="card">
-        <h2>Kontrol Lampu</h2>
+<h1>🏠 Smart Home Blynk</h1>
 
-        <button class="on" onclick="kontrol('V0',1)">Lampu 1 ON</button>
-        <button class="off" onclick="kontrol('V0',0)">Lampu 1 OFF</button>
+<div class="card">
 
-        <br><br>
+<h2>Kontrol Lampu</h2>
 
-        <button class="on" onclick="kontrol('V1',1)">Lampu 2 ON</button>
-        <button class="off" onclick="kontrol('V1',0)">Lampu 2 OFF</button>
-    </div>
+<button class="on" onclick="kontrol('V0',1)">
+Lampu 1 ON
+</button>
 
-    <div class="card">
-        <h2>Tambah Jadwal</h2>
+<button class="off" onclick="kontrol('V0',0)">
+Lampu 1 OFF
+</button>
 
-        <select id="pin">
+<br>
+
+<button class="on" onclick="kontrol('V1',1)">
+Lampu 2 ON
+</button>
+
+<button class="off" onclick="kontrol('V1',0)">
+Lampu 2 OFF
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>Tambah Jadwal</h2>
+
+<select id="pin">
     <option value="V0">Lampu 1</option>
     <option value="V1">Lampu 2</option>
 </select>
 
-        <input type="time" id="waktu">
+<input type="time" id="waktu">
 
-        <select id="status">
+<select id="status">
     <option value="1">ON</option>
     <option value="0">OFF</option>
 </select>
 
-        <br><br>
+<button class="primary" onclick="simpanJadwal()">
+Simpan Jadwal
+</button>
 
-        <button onclick="simpanJadwal()">Simpan Jadwal</button>
+</div>
 
-        <h3>Daftar Jadwal</h3>
-        <ul id="listJadwal"></ul>
+<div class="card">
 
-    </div>
+<h2>Daftar Jadwal</h2>
 
-    <script>
-        // GANTI DENGAN TOKEN BLYNK KAMU
-        const TOKEN = "fYsLU9AyVYV93G3ZqsJ5nZYKOQ-hQkIa";
+<div id="listJadwal"></div>
 
-        function kontrol(pin, nilai) {
+<br>
+
+<button class="danger" onclick="hapusSemua()">
+Hapus Semua Jadwal
+</button>
+
+</div>
+
+</div>
+
+<script>
+
+// =====================
+// TOKEN BLYNK
+// =====================
+
+const TOKEN = "fYsLU9AyVYV93G3ZqsJ5nZYKOQ-hQkIa";
+
+// =====================
+// KONTROL DEVICE
+// =====================
+
+function kontrol(pin,nilai){
+
+    fetch(
+    `https://blynk.cloud/external/api/update?token=${TOKEN}&${pin}=${nilai}`
+    )
+    .then(()=>{
+        alert("Perintah berhasil dikirim");
+    })
+    .catch(()=>{
+        alert("Gagal mengirim ke Blynk");
+    });
+}
+
+// =====================
+// SIMPAN JADWAL
+// =====================
+
+function simpanJadwal(){
+
+    let pin =
+        document.getElementById("pin").value;
+
+    let waktu =
+        document.getElementById("waktu").value;
+
+    let status =
+        document.getElementById("status").value;
+
+    if(waktu==""){
+        alert("Pilih waktu terlebih dahulu");
+        return;
+    }
+
+    let jadwal =
+        JSON.parse(localStorage.getItem("jadwal")) || [];
+
+    jadwal.push({
+        pin:pin,
+        waktu:waktu,
+        status:status
+    });
+
+    localStorage.setItem(
+        "jadwal",
+        JSON.stringify(jadwal)
+    );
+
+    tampilkanJadwal();
+
+    alert("Jadwal berhasil disimpan");
+}
+
+// =====================
+// TAMPILKAN JADWAL
+// =====================
+
+function tampilkanJadwal(){
+
+    let jadwal =
+        JSON.parse(localStorage.getItem("jadwal")) || [];
+
+    let html = "";
+
+    if(jadwal.length==0){
+
+        html = "<p>Belum ada jadwal.</p>";
+
+    }else{
+
+        jadwal.forEach((j,index)=>{
+
+            html += `
+            <div class="jadwal-item">
+
+                <div>
+                    <b>${j.pin}</b> |
+                    ${j.waktu} |
+                    <span class="status">
+                    ${j.status=="1"?"ON":"OFF"}
+                    </span>
+                </div>
+
+                <button
+                class="danger"
+                onclick="hapusJadwal(${index})">
+                Hapus
+                </button>
+
+            </div>
+            `;
+        });
+    }
+
+    document.getElementById("listJadwal").innerHTML = html;
+}
+
+// =====================
+// HAPUS SATU JADWAL
+// =====================
+
+function hapusJadwal(index){
+
+    if(!confirm("Hapus jadwal ini?")){
+        return;
+    }
+
+    let jadwal =
+        JSON.parse(localStorage.getItem("jadwal")) || [];
+
+    jadwal.splice(index,1);
+
+    localStorage.setItem(
+        "jadwal",
+        JSON.stringify(jadwal)
+    );
+
+    tampilkanJadwal();
+}
+
+// =====================
+// HAPUS SEMUA
+// =====================
+
+function hapusSemua(){
+
+    if(!confirm("Hapus semua jadwal?")){
+        return;
+    }
+
+    localStorage.removeItem("jadwal");
+
+    tampilkanJadwal();
+}
+
+// =====================
+// CEK JADWAL OTOMATIS
+// =====================
+
+function cekJadwal(){
+
+    let now = new Date();
+
+    let jam =
+        String(now.getHours()).padStart(2,'0');
+
+    let menit =
+        String(now.getMinutes()).padStart(2,'0');
+
+    let waktuSekarang =
+        jam + ":" + menit;
+
+    let jadwal =
+        JSON.parse(localStorage.getItem("jadwal")) || [];
+
+    jadwal.forEach(j=>{
+
+        if(j.waktu === waktuSekarang){
 
             fetch(
-                    `https://blynk.cloud/external/api/update?token=${TOKEN}&${pin}=${nilai}`
-                )
-                .then(() => alert("Perintah berhasil dikirim"))
-                .catch(() => alert("Gagal mengirim"));
-        }
-
-        function simpanJadwal() {
-
-            const pin = document.getElementById("pin").value;
-            const waktu = document.getElementById("waktu").value;
-            const status = document.getElementById("status").value;
-
-            let jadwal =
-                JSON.parse(localStorage.getItem("jadwal")) || [];
-
-            jadwal.push({
-                pin,
-                waktu,
-                status
-            });
-
-            localStorage.setItem(
-                "jadwal",
-                JSON.stringify(jadwal)
+            `https://blynk.cloud/external/api/update?token=${TOKEN}&${j.pin}=${j.status}`
             );
-
-            tampilkanJadwal();
         }
+    });
+}
 
-        function tampilkanJadwal() {
+// =====================
+// START
+// =====================
 
-            let jadwal =
-                JSON.parse(localStorage.getItem("jadwal")) || [];
+tampilkanJadwal();
 
-            let html = "";
+setInterval(cekJadwal,60000);
 
-            jadwal.forEach((j, index) => {
-
-                html += `
-        <li>
-            ${j.pin} - ${j.waktu} -
-            ${j.status=="1"?"ON":"OFF"}
-        </li>
-        `;
-            });
-
-            document.getElementById("listJadwal").innerHTML = html;
-        }
-
-        function cekJadwal() {
-
-            let sekarang = new Date();
-
-            let jam =
-                sekarang.getHours()
-                .toString()
-                .padStart(2, '0');
-
-            let menit =
-                sekarang.getMinutes()
-                .toString()
-                .padStart(2, '0');
-
-            let waktuSekarang = `${jam}:${menit}`;
-
-            let jadwal =
-                JSON.parse(localStorage.getItem("jadwal")) || [];
-
-            jadwal.forEach(j => {
-
-                if (j.waktu === waktuSekarang) {
-
-                    fetch(
-                        `https://blynk.cloud/external/api/update?token=${TOKEN}&${j.pin}=${j.status}`
-                    );
-                }
-            });
-        }
-
-        tampilkanJadwal();
-
-        setInterval(cekJadwal, 60000);
-    </script>
+</script>
 
 </body>
-
 </html>
